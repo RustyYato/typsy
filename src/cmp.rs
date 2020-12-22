@@ -30,27 +30,27 @@ impl<'a, F> Any<'a, F> for CoNil {
 
 impl<'a, F, T: 'a> Any<'a, Simple<F>> for Cons<T, Nil>
 where
-    F: CallOnce<&'a T, Output = bool>,
+    F: CallOnce<(&'a T,), Output = bool>,
 {
-    fn any(&'a self, f: Simple<F>) -> bool { f.call_once(&self.value) }
+    fn any(&'a self, f: Simple<F>) -> bool { f.call_once((&self.value,)) }
 }
 
 impl<'a, F, T: 'a, R: NonEmpty> Any<'a, Simple<F>> for Cons<T, R>
 where
-    F: CallMut<&'a T, Output = bool>,
+    F: CallMut<(&'a T,), Output = bool>,
     R: Any<'a, Simple<F>>,
 {
-    fn any(&'a self, mut f: Simple<F>) -> bool { f.call_mut(&self.value) || self.rest.any(f) }
+    fn any(&'a self, mut f: Simple<F>) -> bool { f.call_mut((&self.value,)) || self.rest.any(f) }
 }
 
 impl<'a, F, T: 'a, R> Any<'a, Simple<F>> for CoCons<T, R>
 where
-    F: CallOnce<&'a T, Output = bool>,
+    F: CallOnce<(&'a T,), Output = bool>,
     R: Any<'a, Simple<F>>,
 {
     fn any(&'a self, f: Simple<F>) -> bool {
         match self {
-            Self::Value(value) => f.call_once(value),
+            Self::Value(value) => f.call_once((value,)),
             Self::Rest(rest) => rest.any(f),
         }
     }
@@ -58,27 +58,27 @@ where
 
 impl<'a, F, T: 'a, N> Any<'a, Baked<F, N>> for Cons<T, Nil>
 where
-    F: CallOnce<&'a T, N, Output = bool>,
+    F: CallOnce<(&'a T,), N, Output = bool>,
 {
-    fn any(&'a self, f: Baked<F, N>) -> bool { f.call_once(&self.value) }
+    fn any(&'a self, f: Baked<F, N>) -> bool { f.call_once((&self.value,)) }
 }
 
 impl<'a, F, T: 'a, R: NonEmpty, N, M> Any<'a, Baked<F, (N, M)>> for Cons<T, R>
 where
-    F: CallMut<&'a T, N, Output = bool>,
+    F: CallMut<(&'a T,), N, Output = bool>,
     R: Any<'a, Baked<F, M>>,
 {
-    fn any(&'a self, mut f: Baked<F, (N, M)>) -> bool { f.call_mut(&self.value) || self.rest.any(f.rebake()) }
+    fn any(&'a self, mut f: Baked<F, (N, M)>) -> bool { f.call_mut((&self.value,)) || self.rest.any(f.rebake()) }
 }
 
 impl<'a, F, T: 'a, R, N, M> Any<'a, Baked<F, (N, M)>> for CoCons<T, R>
 where
-    F: CallOnce<&'a T, N, Output = bool>,
+    F: CallOnce<(&'a T,), N, Output = bool>,
     R: Any<'a, Baked<F, M>>,
 {
     fn any(&'a self, f: Baked<F, (N, M)>) -> bool {
         match self {
-            Self::Value(value) => f.call_once(value),
+            Self::Value(value) => f.call_once((value,)),
             Self::Rest(rest) => rest.any(f.rebake()),
         }
     }
