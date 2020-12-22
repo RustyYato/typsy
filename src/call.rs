@@ -206,7 +206,7 @@ macro_rules! call {
             }
         }
 
-        call!{$($rest)*}
+        $crate::call!{$($rest)*}
     };
     (
         fn $( [ $($generics:tt)* ] )? (&mut $self:ident : $Self:ty $( $(, $args:ident : $args_ty:ty)+ $(,)?)? ) $(-> $output:ty)?
@@ -239,7 +239,7 @@ macro_rules! call {
             }
         }
 
-        call!{$($rest)*}
+        $crate::call!{$($rest)*}
     };
     (
         fn $( [ $($generics:tt)* ] )? (&$self:ident : $Self:ty $( $(, $args:ident : $args_ty:ty)+ $(,)?)? ) $(-> $output:ty)?
@@ -280,6 +280,6 @@ macro_rules! call {
             }
         }
 
-        call!{$($rest)*}
+        $crate::call!{$($rest)*}
     };
 }
