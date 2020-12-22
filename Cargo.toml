@@ -9,5 +9,7 @@ edition = "2018"
 [features]
 
 nightly = []
+bigger_tuples = []
+extreme_tuples = ['bigger_tuples']
 
 [dependencies]
