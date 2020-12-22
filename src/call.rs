@@ -2,17 +2,17 @@ use core::{convert::Infallible, marker::PhantomData};
 
 use crate::{hlist::Cons, peano};
 
-pub trait CallOnce<Args, Tag> {
+pub trait CallOnce<Args, Tag = ()> {
     type Output;
 
     fn call_once(self, args: Args) -> Self::Output;
 }
 
-pub trait CallMut<Args, Tag>: CallOnce<Args, Tag> {
+pub trait CallMut<Args, Tag = ()>: CallOnce<Args, Tag> {
     fn call_mut(&mut self, args: Args) -> Self::Output;
 }
 
-pub trait Call<Args, Tag>: CallMut<Args, Tag> {
+pub trait Call<Args, Tag = ()>: CallMut<Args, Tag> {
     fn call(&self, args: Args) -> Self::Output;
 }
 
@@ -86,6 +86,22 @@ impl<Args, N, F, R: Call<Args, N>> Call<Args, peano::Succ<N>> for Cons<F, R> {
 impl<T> Bake for T {}
 pub trait Bake: Sized {
     fn bake<TagList>(self) -> Baked<Self, TagList> { Baked::bake(self) }
+}
+
+pub struct Simple<F>(pub F);
+
+impl<Args, F: CallOnce<Args>> CallOnce<Args> for Simple<F> {
+    type Output = F::Output;
+
+    fn call_once(self, args: Args) -> Self::Output { self.0.call_once(args) }
+}
+
+impl<Args, F: CallMut<Args>> CallMut<Args> for Simple<F> {
+    fn call_mut(&mut self, args: Args) -> Self::Output { self.0.call_mut(args) }
+}
+
+impl<Args, F: Call<Args>> Call<Args> for Simple<F> {
+    fn call(&self, args: Args) -> Self::Output { self.0.call(args) }
 }
 
 pub struct Baked<F, TagList>(F, PhantomData<TagList>);
@@ -177,7 +193,7 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
@@ -202,17 +218,17 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
 
             fn call_once(mut self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::CallMut::<($($($args_ty),*)?), ()>::call_mut(&mut self, args)
+                $crate::call::CallMut::<($($($args_ty),*)?)>::call_mut(&mut self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             fn call_mut(&mut $self, ($($($args),*)?): ($($($args_ty),*)?)) -> Self::Output {
@@ -235,25 +251,25 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
 
             fn call_once(self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::Call::<($($($args_ty),*)?), ()>::call(&self, args)
+                $crate::call::Call::<($($($args_ty),*)?)>::call(&self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             fn call_mut(&mut self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::Call::<($($($args_ty),*)?), ()>::call(&*self, args)
+                $crate::call::Call::<($($($args_ty),*)?)>::call(&*self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::Call<($($($args_ty),*)?), ()> for $Self
+        impl $(<$($generics)*>)? $crate::call::Call<($($($args_ty),*)?)> for $Self
         $(where $($where_clause)*)?
         {
             fn call(&$self, ($($($args),*)?): ($($($args_ty),*)?)) -> Self::Output {

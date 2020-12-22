@@ -1,7 +1,7 @@
 use coprod::Uninhabitted;
 
 use crate::{
-    call::{AlwaysOk, Baked, CallMut, CallOnce},
+    call::{AlwaysOk, Baked, CallMut, CallOnce, Simple},
     coprod,
     hlist::{Cons, HList, Nil, NonEmpty},
     CoProd,
@@ -40,6 +40,34 @@ impl<A, F> TryFold<A, F> for Nil {
     type Error = core::convert::Infallible;
 
     fn try_fold(self, acc: A, _: F) -> Result<Self::Output, Self::Error> { Ok(acc) }
+}
+
+impl<A, F, T, O, E> TryFold<A, Simple<F>> for Cons<T, Nil>
+where
+    F: CallOnce<(A, T), Output = Result<O, E>>,
+{
+    type Output = O;
+    type Error = CoProd!(E);
+
+    fn try_fold(self, acc: A, f: Simple<F>) -> Result<Self::Output, Self::Error> {
+        let acc = f.call_once((acc, self.value)).map_err(coprod::CoCons::Value)?;
+        Ok(acc)
+    }
+}
+
+impl<A, F, T, R: HList, O, E> TryFold<A, Simple<F>> for Cons<T, R>
+where
+    F: CallMut<(A, T), Output = Result<O, E>>,
+    R: NonEmpty + TryFold<O, Simple<F>>,
+{
+    type Output = R::Output;
+    type Error = CoProd!(E, @R::Error);
+
+    fn try_fold(self, acc: A, mut f: Simple<F>) -> Result<Self::Output, Self::Error> {
+        let acc = f.call_mut((acc, self.value)).map_err(coprod::CoCons::Value)?;
+        let acc = self.rest.try_fold(acc, f).map_err(coprod::CoCons::Rest)?;
+        Ok(acc)
+    }
 }
 
 impl<A, F, T, O, E, N> TryFold<A, Baked<F, N>> for Cons<T, Nil>
