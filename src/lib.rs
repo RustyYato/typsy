@@ -15,6 +15,7 @@ pub mod peano;
 pub mod cmp;
 pub mod fold;
 pub mod map;
+pub mod zip;
 
 use seal::Seal;
 mod seal {
