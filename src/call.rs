@@ -1,4 +1,4 @@
-use core::{convert::Infallible, marker::PhantomData};
+use core::convert::Infallible;
 
 use crate::{hlist::Cons, peano};
 
@@ -77,58 +77,6 @@ impl<Args, F: Fn(Args) -> O, O, R> Call<Args, peano::Zero> for Cons<F, R> {
 impl<Args, N, F, R: Call<Args, N>> Call<Args, peano::Succ<N>> for Cons<F, R> {
     #[inline(always)]
     fn call(&self, args: Args) -> Self::Output { self.rest.call(args) }
-}
-
-//
-// combinators - baked tag
-//
-
-impl<T> Bake for T {}
-pub trait Bake: Sized {
-    fn bake<TagList>(self) -> Baked<Self, TagList> { Baked::bake(self) }
-}
-
-pub struct Simple<F>(pub F);
-
-impl<Args, F: CallOnce<Args>> CallOnce<Args> for Simple<F> {
-    type Output = F::Output;
-
-    fn call_once(self, args: Args) -> Self::Output { self.0.call_once(args) }
-}
-
-impl<Args, F: CallMut<Args>> CallMut<Args> for Simple<F> {
-    fn call_mut(&mut self, args: Args) -> Self::Output { self.0.call_mut(args) }
-}
-
-impl<Args, F: Call<Args>> Call<Args> for Simple<F> {
-    fn call(&self, args: Args) -> Self::Output { self.0.call(args) }
-}
-
-pub struct Baked<F, TagList>(F, PhantomData<TagList>);
-
-impl<F, TagList> Baked<F, TagList> {
-    pub const fn bake(f: F) -> Self { Self(f, PhantomData) }
-
-    pub fn into_inner(self) -> F {
-        let Self(f, PhantomData) = self;
-        f
-    }
-
-    pub fn rebake<T>(self) -> Baked<F, T> { Baked::bake(self.into_inner()) }
-}
-
-impl<Args, Tag, F: CallOnce<Args, Tag>, TagList> CallOnce<Args, Tag> for Baked<F, TagList> {
-    type Output = F::Output;
-
-    fn call_once(self, args: Args) -> Self::Output { self.0.call_once(args) }
-}
-
-impl<Args, Tag, F: CallMut<Args, Tag>, TagList> CallMut<Args, Tag> for Baked<F, TagList> {
-    fn call_mut(&mut self, args: Args) -> Self::Output { self.0.call_mut(args) }
-}
-
-impl<Args, Tag, F: Call<Args, Tag>, TagList> Call<Args, Tag> for Baked<F, TagList> {
-    fn call(&self, args: Args) -> Self::Output { self.0.call(args) }
 }
 
 //

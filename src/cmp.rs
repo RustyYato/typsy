@@ -1,54 +1,50 @@
 use crate::{
-    call::{Baked, CallMut, CallOnce, Not, Simple},
+    call::{CallMut, CallOnce, Not},
     coprod::{CoCons, CoNil},
     hlist::{Cons, Nil, NonEmpty},
 };
 
-pub trait Any<'a, F> {
+pub trait Any<'a, F, TagList = ()> {
     fn any(&'a self, f: F) -> bool;
 }
 
-pub trait All<'a, F> {
+pub trait All<'a, F, TagList = ()> {
     fn all(&'a self, f: F) -> bool;
 }
 
-impl<'a, F, T: Any<'a, Baked<Not<F>, TagList>>, TagList> All<'a, Baked<F, TagList>> for T {
-    fn all(&'a self, f: Baked<F, TagList>) -> bool { !self.any(Baked::bake(Not(f.into_inner()))) }
+impl<'a, F, T: Any<'a, Not<F>, TagList>, TagList> All<'a, F, TagList> for T {
+    fn all(&'a self, f: F) -> bool { !self.any(Not(f)) }
 }
 
-impl<'a, F, T: Any<'a, Simple<Not<F>>>> All<'a, Simple<F>> for T {
-    fn all(&'a self, Simple(f): Simple<F>) -> bool { !self.any(Simple(Not(f))) }
-}
-
-impl<'a, F> Any<'a, F> for Nil {
+impl<'a, F> Any<'a, F, ()> for Nil {
     fn any(&'a self, _: F) -> bool { false }
 }
 
-impl<'a, F> Any<'a, F> for CoNil {
+impl<'a, F> Any<'a, F, ()> for CoNil {
     fn any(&'a self, _: F) -> bool { match *self {} }
 }
 
-impl<'a, F, T: 'a> Any<'a, Simple<F>> for Cons<T, Nil>
+impl<'a, F, T: 'a> Any<'a, F> for Cons<T, Nil>
 where
     F: CallOnce<(&'a T,), Output = bool>,
 {
-    fn any(&'a self, f: Simple<F>) -> bool { f.call_once((&self.value,)) }
+    fn any(&'a self, f: F) -> bool { f.call_once((&self.value,)) }
 }
 
-impl<'a, F, T: 'a, R: NonEmpty> Any<'a, Simple<F>> for Cons<T, R>
+impl<'a, F, T: 'a, R: NonEmpty> Any<'a, F> for Cons<T, R>
 where
     F: CallMut<(&'a T,), Output = bool>,
-    R: Any<'a, Simple<F>>,
+    R: Any<'a, F>,
 {
-    fn any(&'a self, mut f: Simple<F>) -> bool { f.call_mut((&self.value,)) || self.rest.any(f) }
+    fn any(&'a self, mut f: F) -> bool { f.call_mut((&self.value,)) || self.rest.any(f) }
 }
 
-impl<'a, F, T: 'a, R> Any<'a, Simple<F>> for CoCons<T, R>
+impl<'a, F, T: 'a, R> Any<'a, F> for CoCons<T, R>
 where
     F: CallOnce<(&'a T,), Output = bool>,
-    R: Any<'a, Simple<F>>,
+    R: Any<'a, F>,
 {
-    fn any(&'a self, f: Simple<F>) -> bool {
+    fn any(&'a self, f: F) -> bool {
         match self {
             Self::Value(value) => f.call_once((value,)),
             Self::Rest(rest) => rest.any(f),
@@ -56,30 +52,30 @@ where
     }
 }
 
-impl<'a, F, T: 'a, N> Any<'a, Baked<F, N>> for Cons<T, Nil>
+impl<'a, F, T: 'a, N> Any<'a, F, (N, ())> for Cons<T, Nil>
 where
     F: CallOnce<(&'a T,), N, Output = bool>,
 {
-    fn any(&'a self, f: Baked<F, N>) -> bool { f.call_once((&self.value,)) }
+    fn any(&'a self, f: F) -> bool { f.call_once((&self.value,)) }
 }
 
-impl<'a, F, T: 'a, R: NonEmpty, N, M> Any<'a, Baked<F, (N, M)>> for Cons<T, R>
+impl<'a, F, T: 'a, R: NonEmpty, N, M> Any<'a, F, (N, M)> for Cons<T, R>
 where
     F: CallMut<(&'a T,), N, Output = bool>,
-    R: Any<'a, Baked<F, M>>,
+    R: Any<'a, F, M>,
 {
-    fn any(&'a self, mut f: Baked<F, (N, M)>) -> bool { f.call_mut((&self.value,)) || self.rest.any(f.rebake()) }
+    fn any(&'a self, mut f: F) -> bool { f.call_mut((&self.value,)) || self.rest.any(f) }
 }
 
-impl<'a, F, T: 'a, R, N, M> Any<'a, Baked<F, (N, M)>> for CoCons<T, R>
+impl<'a, F, T: 'a, R, N, M> Any<'a, F, (N, M)> for CoCons<T, R>
 where
     F: CallOnce<(&'a T,), N, Output = bool>,
-    R: Any<'a, Baked<F, M>>,
+    R: Any<'a, F, M>,
 {
-    fn any(&'a self, f: Baked<F, (N, M)>) -> bool {
+    fn any(&'a self, f: F) -> bool {
         match self {
             Self::Value(value) => f.call_once((value,)),
-            Self::Rest(rest) => rest.any(f.rebake()),
+            Self::Rest(rest) => rest.any(f),
         }
     }
 }
