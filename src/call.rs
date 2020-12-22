@@ -193,12 +193,12 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
 
-            fn call_once($self, ($($($args),*)?): ($($($args_ty),*)?)) -> Self::Output {
+            fn call_once($self, ($($($args,)*)?): ($($($args_ty,)*)?)) -> Self::Output {
                 #[warn(unused_parens)]
                 {
                     $($body)*
@@ -218,20 +218,20 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
 
-            fn call_once(mut self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::CallMut::<($($($args_ty),*)?)>::call_mut(&mut self, args)
+            fn call_once(mut self, args: ($($($args_ty,)*)?)) -> Self::Output {
+                $crate::call::CallMut::<($($($args_ty,)*)?)>::call_mut(&mut self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
-            fn call_mut(&mut $self, ($($($args),*)?): ($($($args_ty),*)?)) -> Self::Output {
+            fn call_mut(&mut $self, ($($($args,)*)?): ($($($args_ty,)*)?)) -> Self::Output {
                 #[warn(unused_parens)]
                 {
                     $($body)*
@@ -251,28 +251,28 @@ macro_rules! call {
         $($rest:tt)*
     ) => {
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallOnce<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
             type Output = $crate::return_type!($($output)?);
 
-            fn call_once(self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::Call::<($($($args_ty),*)?)>::call(&self, args)
+            fn call_once(self, args: ($($($args_ty,)*)?)) -> Self::Output {
+                $crate::call::Call::<($($($args_ty,)*)?)>::call(&self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::CallMut<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
-            fn call_mut(&mut self, args: ($($($args_ty),*)?)) -> Self::Output {
-                $crate::call::Call::<($($($args_ty),*)?)>::call(&*self, args)
+            fn call_mut(&mut self, args: ($($($args_ty,)*)?)) -> Self::Output {
+                $crate::call::Call::<($($($args_ty,)*)?)>::call(&*self, args)
             }
         }
         #[allow(unused_parens)]
-        impl $(<$($generics)*>)? $crate::call::Call<($($($args_ty),*)?)> for $Self
+        impl $(<$($generics)*>)? $crate::call::Call<($($($args_ty,)*)?)> for $Self
         $(where $($where_clause)*)?
         {
-            fn call(&$self, ($($($args),*)?): ($($($args_ty),*)?)) -> Self::Output {
+            fn call(&$self, ($($($args,)*)?): ($($($args_ty,)*)?)) -> Self::Output {
                 #[warn(unused_parens)]
                 {
                     $($body)*
