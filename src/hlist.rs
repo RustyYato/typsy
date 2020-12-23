@@ -108,3 +108,26 @@ pub trait Shuffle<T: HList, N>: Split<T, N, Remainder = Nil> {
         list
     }
 }
+
+pub trait Concat<T: HList>: HList {
+    type Output: HList;
+
+    fn concat(self, other: T) -> Self::Output;
+}
+
+impl<T: HList> Concat<T> for Nil {
+    type Output = T;
+
+    fn concat(self, other: T) -> Self::Output { other }
+}
+
+impl<T, R: Concat<L>, L: HList> Concat<L> for Cons<T, R> {
+    type Output = Cons<T, R::Output>;
+
+    fn concat(self, other: L) -> Self::Output {
+        Cons {
+            value: self.value,
+            rest: self.rest.concat(other),
+        }
+    }
+}
