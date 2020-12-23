@@ -48,6 +48,10 @@ pub trait Access<T, N>: CoProd {
 
     fn take(self) -> Result<T, Self::Remainder>;
 
+    fn get(&self) -> Option<&T>;
+
+    fn get_mut(&mut self) -> Option<&mut T>;
+
     fn put(value: T) -> Self;
 }
 
@@ -71,6 +75,20 @@ impl<T, R: CoProd> Access<T, peano::Zero> for CoCons<T, R> {
         }
     }
 
+    fn get(&self) -> Option<&T> {
+        match self {
+            Self::Value(value) => Some(value),
+            Self::Rest(_) => None,
+        }
+    }
+
+    fn get_mut(&mut self) -> Option<&mut T> {
+        match self {
+            Self::Value(value) => Some(value),
+            Self::Rest(_) => None,
+        }
+    }
+
     fn put(value: T) -> Self { Self::Value(value) }
 }
 
@@ -81,6 +99,20 @@ impl<T, U, R: Access<T, N>, N> Access<T, peano::Succ<N>> for CoCons<U, R> {
         match self {
             Self::Value(value) => Err(CoCons::Value(value)),
             Self::Rest(rest) => rest.take().map_err(CoCons::Rest),
+        }
+    }
+
+    fn get(&self) -> Option<&T> {
+        match self {
+            Self::Value(_) => None,
+            Self::Rest(rest) => rest.get(),
+        }
+    }
+
+    fn get_mut(&mut self) -> Option<&mut T> {
+        match self {
+            Self::Value(_) => None,
+            Self::Rest(rest) => rest.get_mut(),
         }
     }
 

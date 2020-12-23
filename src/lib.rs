@@ -13,6 +13,7 @@ pub mod coprod;
 pub mod hlist;
 pub mod peano;
 
+pub mod as_ref;
 pub mod cmp;
 pub mod fold;
 pub mod map;
