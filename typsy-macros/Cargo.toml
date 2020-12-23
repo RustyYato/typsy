@@ -1,17 +1,15 @@
 [package]
-name = "typsy"
+name = "typsy-macros"
 version = "0.1.0"
 authors = ["RustyYato <krishna.sd.2012@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-
-default = ['macros']
-
-bigger_tuples = []
-extreme_tuples = ['bigger_tuples']
+[lib]
+proc-macro = true
 
 [dependencies]
-macros = { path = 'typsy-macros', package = 'typsy-macros', optional = true }
+syn = '1'
+quote = '1'
+proc-macro2 = '1'

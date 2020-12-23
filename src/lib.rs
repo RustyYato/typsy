@@ -1,12 +1,11 @@
 #![no_std]
-#![cfg_attr(feature = "nightly", feature(const_generics))]
 #![forbid(unsafe_code)]
 #![cfg_attr(feature = "extreme_tuples", recursion_limit = "256")]
 
 #[doc(hidden)]
-pub use core;
+pub use {core, macros};
 
-#[cfg(feature = "nightly")]
+#[cfg(feature = "macros")]
 pub mod anon;
 pub mod call;
 pub mod coprod;
