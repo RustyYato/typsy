@@ -4,7 +4,12 @@ pub use core::marker::PhantomData;
 
 pub use macros::Transform;
 
+mod deep_transform;
+pub use deep_transform::{DeepTransform, DeepTransformFrom};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Named<T, Name: 'static>(pub T, PhantomData<Name>);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Unnamed<T>(pub T);
 
 impl<T, Name: 'static> Named<T, Name> {
@@ -76,6 +81,33 @@ pub trait Access {
     }
 }
 
+pub trait RemoveField<N, I> {
+    type Value;
+    type Remainder;
+
+    fn remove_field(self) -> (Self::Value, Self::Remainder);
+}
+
+impl<T, Name, R> RemoveField<Name, crate::peano::Zero> for Cons<Named<T, Name>, R> {
+    type Value = T;
+    type Remainder = R;
+
+    fn remove_field(self) -> (Self::Value, Self::Remainder) { (self.value.0, self.rest) }
+}
+
+impl<T, Name, R: RemoveField<Name, N>, N> RemoveField<Name, crate::peano::Succ<N>> for Cons<T, R> {
+    type Value = R::Value;
+    type Remainder = Cons<T, R::Remainder>;
+
+    fn remove_field(self) -> (Self::Value, Self::Remainder) {
+        let (value, rest) = self.rest.remove_field();
+        (value, Cons {
+            value: self.value,
+            rest,
+        })
+    }
+}
+
 pub trait Transform: Sized {
     type Canon: AnonType;
 
@@ -89,6 +121,32 @@ pub trait Transform: Sized {
     {
         O::from_canon(self.into_canon().shuffle())
     }
+
+    fn deep_transform<O: Transform, N>(self) -> O
+    where
+        Self::Canon: DeepTransform<O::Canon, N>,
+    {
+        O::from_canon(self.into_canon().deep_transform())
+    }
+}
+
+impl Transform for Nil {
+    type Canon = Self;
+
+    fn from_canon(anon: Self::Canon) -> Self { anon }
+
+    fn into_canon(self) -> Self::Canon { self }
+}
+
+impl<T, R> Transform for Cons<T, R>
+where
+    Self: AnonType,
+{
+    type Canon = Self;
+
+    fn from_canon(anon: Self::Canon) -> Self { anon }
+
+    fn into_canon(self) -> Self::Canon { self }
 }
 
 impl<T: AnonType> IntoNamed for T {}
