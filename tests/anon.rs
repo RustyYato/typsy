@@ -8,7 +8,7 @@ struct Vec3 {
     pub z: f32,
 }
 
-#[derive(Transform)]
+#[derive(Debug, Transform, PartialEq)]
 struct Point {
     pub y: f32,
     pub w: f32,
@@ -22,4 +22,19 @@ struct TuplePoint(pub f32, pub i32, pub u32);
 fn convert(vec: Vec3) -> Point { vec.transform() }
 
 #[test]
-fn test() {}
+fn test() {
+    assert_eq!(
+        convert(Vec3 {
+            w: 0.0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0
+        }),
+        Point {
+            w: 0.0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0
+        }
+    )
+}

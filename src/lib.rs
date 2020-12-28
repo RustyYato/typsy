@@ -1,6 +1,10 @@
 #![no_std]
 #![forbid(unsafe_code)]
 #![cfg_attr(feature = "extreme_tuples", recursion_limit = "256")]
+#![cfg_attr(feature = "nightly", feature(unsized_local))]
+
+#[cfg(feature = "alloc")]
+extern crate alloc as std;
 
 #[doc(hidden)]
 pub use {core, macros};

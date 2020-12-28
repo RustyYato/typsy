@@ -8,10 +8,12 @@ edition = "2018"
 
 [features]
 
-default = ['macros']
+default = ['macros', 'alloc']
 
 bigger_tuples = []
 extreme_tuples = ['bigger_tuples']
+alloc = []
+nightly = []
 
 [dependencies]
 macros = { path = 'typsy-macros', package = 'typsy-macros', optional = true }

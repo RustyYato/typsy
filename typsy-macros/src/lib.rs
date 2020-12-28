@@ -73,12 +73,6 @@ pub fn transform(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         syn::Fields::Named(fields) => {
             let fields = fields.named;
 
-            let names = fields.iter().map(|name| {
-                make_name(Name {
-                    crate_path: syn::parse_quote!(typsy),
-                    name: name.ident.as_ref().unwrap().clone(),
-                })
-            });
             let field_names = fields.iter().map(|field| &field.ident).collect::<Vec<_>>();
             let canon = fields.iter().map(|syn::Field { ident, ty, .. }| quote!(#ident: #ty));
 

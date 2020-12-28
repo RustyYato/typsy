@@ -20,6 +20,20 @@ pub trait Call<Args, Tag = ()>: CallMut<Args, Tag> {
 // Forwarding implementations
 //
 
+#[cfg(all(feature = "alloc", not(feature = "nightly")))]
+impl<C: CallOnce<Args, Tag>, Args, Tag> CallOnce<Args, Tag> for std::boxed::Box<C> {
+    type Output = C::Output;
+
+    fn call_once(self, args: Args) -> Self::Output { (*self).call_once(args) }
+}
+
+#[cfg(all(feature = "alloc", feature = "nightly"))]
+impl<C: ?Sized + CallOnce<Args, Tag>, Args, Tag> CallOnce<Args, Tag> for std::boxed::Box<C> {
+    type Output = C::Output;
+
+    fn call_once(self, args: Args) -> Self::Output { (*self).call_once(args) }
+}
+
 impl<C: ?Sized + CallMut<Args, Tag>, Args, Tag> CallOnce<Args, Tag> for &mut C {
     type Output = C::Output;
 
