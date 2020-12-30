@@ -7,7 +7,11 @@
 extern crate alloc as std;
 
 #[doc(hidden)]
-pub use {core, macros};
+pub use core;
+
+#[doc(hidden)]
+#[cfg(feature = "macros")]
+pub use macros;
 
 #[cfg(feature = "macros")]
 pub mod anon;
