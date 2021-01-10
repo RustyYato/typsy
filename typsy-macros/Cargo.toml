@@ -3,6 +3,11 @@ name = "typsy-macros"
 version = "0.1.0"
 authors = ["RustyYato <krishna.sd.2012@gmail.com>"]
 edition = "2018"
+keywords = ["type", "list", "compile-time", "hlist", "macro"]
+categories = ["no-std"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/RustyYato/typsy"
+description = "macros for `typsy`"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -3,6 +3,11 @@ name = "typsy"
 version = "0.1.0"
 authors = ["RustyYato <krishna.sd.2012@gmail.com>"]
 edition = "2018"
+keywords = ["type", "list", "compile-time", "hlist"]
+categories = ["no-std"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/RustyYato/typsy"
+description = "Heterogenous containers"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -16,4 +21,4 @@ alloc = []
 nightly = []
 
 [dependencies]
-macros = { path = 'typsy-macros', package = 'typsy-macros', optional = true }
+macros = { path = 'typsy-macros', version = "0.1", package = 'typsy-macros', optional = true }
